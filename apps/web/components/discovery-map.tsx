@@ -16,7 +16,7 @@ export function DiscoveryMap({ markers, compact = false }: { markers: Marker[]; 
       style: process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://demotiles.maplibre.org/style.json",
       center: [-80.19, 25.77],
       zoom: compact ? 8.2 : 7.1,
-      attributionControl: true,
+      attributionControl: {},
       pitch: compact ? 20 : 0
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
