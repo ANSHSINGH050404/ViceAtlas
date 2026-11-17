@@ -10,7 +10,8 @@ const createDiscoverySchema = z.object({
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   region: z.string().trim().max(100).optional(),
-  gameVersion: z.string().trim().max(50).optional()
+  gameVersion: z.string().trim().max(50).optional(),
+  tags: z.array(z.string().trim().min(1).max(30)).max(8).optional()
 }).refine((data) => (data.latitude === undefined) === (data.longitude === undefined), {
   message: "Latitude and longitude must be supplied together."
 });
@@ -23,19 +24,28 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const category = searchParams.get("category");
   const query = searchParams.get("q");
+  const tag = searchParams.get("tag");
+  const sort = searchParams.get("sort") || "newest";
   const take = Math.min(Number(searchParams.get("take") || 20), 50);
+
+  const orderBy =
+    sort === "top" ? { voteScore: "desc" as const } :
+    sort === "discussed" ? { comments: { _count: "desc" as const } } :
+    { createdAt: "desc" as const };
 
   const discoveries = await prisma.discovery.findMany({
     where: {
       status: { not: "REJECTED" },
       ...(category ? { category: category as never } : {}),
+      ...(tag ? { tags: { some: { tag: { name: tag } } } } : {}),
       ...(query ? { OR: [{ title: { contains: query, mode: "insensitive" } }, { description: { contains: query, mode: "insensitive" } }] } : {})
     },
-    orderBy: { createdAt: "desc" },
+    orderBy,
     take: Number.isFinite(take) && take > 0 ? take : 20,
     include: {
       author: { select: { id: true, name: true, username: true, image: true } },
-      _count: { select: { votes: true, comments: true, evidence: true } }
+      tags: { include: { tag: true } },
+      _count: { select: { votes: true, comments: true, evidence: true, bookmarks: true } }
     }
   });
 
@@ -53,9 +63,29 @@ export async function POST(request: NextRequest) {
   const baseSlug = slugify(parsed.data.title) || "discovery";
   const slug = `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`;
 
+  const tagNames = (parsed.data.tags || []).map((t) => t.toLowerCase());
+
   const discovery = await prisma.discovery.create({
-    data: { ...parsed.data, slug, authorId: session.user.id },
-    include: { author: { select: { id: true, name: true, username: true } } }
+    data: {
+      title: parsed.data.title,
+      description: parsed.data.description,
+      category: parsed.data.category,
+      latitude: parsed.data.latitude,
+      longitude: parsed.data.longitude,
+      region: parsed.data.region,
+      gameVersion: parsed.data.gameVersion,
+      slug,
+      authorId: session.user.id,
+      tags: {
+        create: tagNames.map((name) => ({
+          tag: { connectOrCreate: { where: { name }, create: { name } } }
+        }))
+      }
+    },
+    include: {
+      author: { select: { id: true, name: true, username: true } },
+      tags: { include: { tag: true } }
+    }
   });
 
   return NextResponse.json({ data: discovery }, { status: 201 });

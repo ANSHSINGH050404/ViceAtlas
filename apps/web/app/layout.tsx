@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
+import { NotificationsBell } from "@/components/notifications-bell";
 
 export const metadata: Metadata = {
   title: "ViceAtlas — GTA VI Discovery Network",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>{children}<NotificationsBell /></body>
     </html>
   );
 }

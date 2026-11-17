@@ -15,12 +15,13 @@ export default function SubmitPage() {
   const [region, setRegion] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
+  const [tags, setTags] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError("");
-    const payload = { title, description, category, region: region || undefined,
+    const payload = { title, description, category, region: region || undefined, tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
       ...(latitude && longitude ? { latitude: Number(latitude), longitude: Number(longitude) } : {}) };
     const response = await fetch("/api/discoveries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const result = await response.json();
@@ -39,6 +40,7 @@ export default function SubmitPage() {
       <Field label="Category"><select value={category} onChange={e=>setCategory(e.target.value)} className="field">{categories.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></Field>
       <Field label="What did you find?"><textarea required minLength={20} maxLength={3000} rows={6} value={description} onChange={e=>setDescription(e.target.value)} placeholder="Describe what happened, where you found it and how someone else can reproduce it..." className="field resize-y"/></Field>
       <Field label="Region (optional)"><input value={region} onChange={e=>setRegion(e.target.value)} placeholder="e.g. Vice City" className="field"/></Field>
+      <Field label="Tags (comma-separated, optional)"><input value={tags} onChange={e=>setTags(e.target.value)} placeholder="pier, lights, night" className="field"/></Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Latitude (optional)"><input type="number" step="any" value={latitude} onChange={e=>setLatitude(e.target.value)} placeholder="25.77" className="field"/></Field>
         <Field label="Longitude (optional)"><input type="number" step="any" value={longitude} onChange={e=>setLongitude(e.target.value)} placeholder="-80.19" className="field"/></Field>
