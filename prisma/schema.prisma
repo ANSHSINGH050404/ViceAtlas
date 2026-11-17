@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DiscoveryCategory {
+  LOCATION
+  EASTER_EGG
+  VEHICLE
+  COLLECTIBLE
+  NPC_ENCOUNTER
+  MYSTERY
+  OTHER
+}
+
+enum DiscoveryStatus {
+  PENDING
+  COMMUNITY_CONFIRMED
+  VERIFIED
+  REJECTED
+}
+
+enum EvidenceType {
+  IMAGE
+  VIDEO
+  LINK
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String
+  email         String       @unique
+  emailVerified Boolean      @default(false)
+  image         String?
+  username      String?      @unique
+  bio           String?
+  reputation    Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  sessions      Session[]
+  accounts      Account[]
+  discoveries   Discovery[]  @relation("DiscoveryAuthor")
+  votes         Vote[]
+  comments      Comment[]
+  evidence      Evidence[]   @relation("EvidenceUploader")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model Discovery {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  title       String
+  description String
+  category    DiscoveryCategory
+  status      DiscoveryStatus   @default(PENDING)
+  latitude    Float?
+  longitude   Float?
+  region      String?
+  gameVersion String?
+  authorId    String
+  author      User              @relation("DiscoveryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  evidence    Evidence[]
+  votes       Vote[]
+  comments    Comment[]
+  tags        DiscoveryTag[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([category, status])
+  @@index([createdAt])
+  @@index([latitude, longitude])
+  @@index([authorId])
+}
+
+model Evidence {
+  id           String       @id @default(cuid())
+  type         EvidenceType
+  url          String
+  caption      String?
+  discoveryId  String
+  discovery    Discovery    @relation(fields: [discoveryId], references: [id], onDelete: Cascade)
+  uploaderId   String
+  uploader     User         @relation("EvidenceUploader", fields: [uploaderId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+
+  @@index([discoveryId])
+}
+
+model Vote {
+  id          String    @id @default(cuid())
+  value       Int
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discoveryId String
+  discovery   Discovery @relation(fields: [discoveryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, discoveryId])
+  @@index([discoveryId])
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  body        String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discoveryId String
+  discovery   Discovery @relation(fields: [discoveryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([discoveryId, createdAt])
+}
+
+model Tag {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  discoveries DiscoveryTag[]
+}
+
+model DiscoveryTag {
+  discoveryId String
+  tagId       String
+  discovery   Discovery @relation(fields: [discoveryId], references: [id], onDelete: Cascade)
+  tag         Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([discoveryId, tagId])
+}
