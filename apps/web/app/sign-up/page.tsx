@@ -29,6 +29,9 @@ export default function SignUpPage() {
       {error && <p className="text-sm text-red-400">{error}</p>}
       <button disabled={busy} className="w-full rounded-xl bg-[#b8ff65] py-3 font-bold text-black disabled:opacity-50">{busy ? "Creating account..." : "Create account"}</button>
     </form>
+    <div className="mt-6">
+      <button onClick={() => authClient.signIn.social({ provider: "google", callbackURL: "/" })} className="w-full rounded-xl border border-zinc-700 py-3 font-semibold hover:border-[#b8ff65] hover:text-[#b8ff65]">Continue with Google</button>
+    </div>
     <p className="mt-6 text-center text-xs text-zinc-500">Already registered? <Link href="/sign-in" className="text-[#b8ff65]">Sign in</Link></p>
   </div></main>;
 }
