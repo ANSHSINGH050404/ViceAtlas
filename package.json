@@ -15,6 +15,7 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@databuddy/sdk": "^3.5.3",
     "@prisma/client": "^6.19.0",
     "better-auth": "^1.4.0",
     "clsx": "^2.1.1",

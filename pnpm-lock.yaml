@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@databuddy/sdk':
+        specifier: ^3.5.3
+        version: 3.5.3(react@19.3.1)
       '@prisma/client':
         specifier: ^6.19.0
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -151,6 +154,17 @@ packages:
 
   '@better-fetch/fetch@1.3.3':
     resolution: {integrity: sha512-U6SlDt/GUWtK2JAxS/NhdoYTEim+EL1G5byz2TUj83KjLZBUpYzb5SmX0aXaCnbGkAjFKnV/o/0+cyXMbEcqqg==}
+
+  '@databuddy/sdk@3.5.3':
+    resolution: {integrity: sha512-pAro3lR74ltGQL9mMF4Hi1jtxAdzGSAZQhQx0F3c0UaFvnKcJ3uVBoIIH5Zz5vY9I2IrvFHeJ/WspcJ+KTh5zw==}
+    peerDependencies:
+      react: '>=18'
+      vue: '>=3.5'
+    peerDependenciesMeta:
+      react:
+        optional: true
+      vue:
+        optional: true
 
   '@emnapi/runtime@1.11.3':
     resolution: {integrity: sha512-Xz4Tpyki7XyrpbUK1jR1AhdAdaXyhhY4lZ3neLodmhpuWfy2PAQN5B46sAiU4liOXGLkHypn/qU+jvfWSCYYLA==}
@@ -2458,6 +2472,10 @@ snapshots:
       '@noble/hashes': 2.4.0
 
   '@better-fetch/fetch@1.3.3': {}
+
+  '@databuddy/sdk@3.5.3(react@19.3.1)':
+    optionalDependencies:
+      react: 19.3.1
 
   '@emnapi/runtime@1.11.3':
     dependencies:

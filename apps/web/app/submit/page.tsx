@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { track } from "@databuddy/sdk";
 
 const categories = [
   ["LOCATION", "Hidden location"], ["EASTER_EGG", "Easter egg"], ["VEHICLE", "Vehicle"],
@@ -27,6 +28,7 @@ export default function SubmitPage() {
     const result = await response.json();
     setBusy(false);
     if (!response.ok) { setError(result.error || "Unable to submit."); return; }
+    track("discovery_submitted", { category });
     window.location.href = `/discoveries/${result.data.slug}`;
   }
 

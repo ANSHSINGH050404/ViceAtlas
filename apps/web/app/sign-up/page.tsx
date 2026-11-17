@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { track } from "@databuddy/sdk";
 
 export default function SignUpPage() {
   const [name, setName] = useState("");
@@ -16,7 +17,7 @@ export default function SignUpPage() {
     const result = await authClient.signUp.email({ name, email, password });
     setBusy(false);
     if (result.error) setError(result.error.message || "Unable to create account.");
-    else window.location.href = "/";
+    else { track("sign_up_completed", { method: "email" }); window.location.href = "/"; }
   }
 
   return <main className="grid min-h-screen place-items-center px-5"><div className="w-full max-w-md rounded-3xl border border-zinc-800 bg-[#111114] p-8">
