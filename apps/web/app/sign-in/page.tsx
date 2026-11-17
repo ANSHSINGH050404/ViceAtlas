@@ -29,7 +29,12 @@ export default function SignInPage() {
       <button disabled={busy} className="w-full rounded-xl bg-[#b8ff65] py-3 font-bold text-black disabled:opacity-50">{busy ? "Signing in..." : "Sign in"}</button>
     </form>
     <div className="mt-6">
-      <button onClick={() => authClient.signIn.social({ provider: "google", callbackURL: "/" })} className="w-full rounded-xl border border-zinc-700 py-3 font-semibold hover:border-[#b8ff65] hover:text-[#b8ff65]">Continue with Google</button>
+      <button onClick={async () => {
+        setBusy(true); setError("");
+        const result = await authClient.signIn.social({ provider: "google", callbackURL: "/", errorCallbackURL: "/sign-in?error=google" });
+        setBusy(false);
+        if (result?.error) setError(result.error.message || "Google sign-in failed.");
+      }} disabled={busy} className="w-full rounded-xl border border-zinc-700 py-3 font-semibold hover:border-[#b8ff65] hover:text-[#b8ff65] disabled:opacity-50">{busy ? "Redirecting..." : "Continue with Google"}</button>
     </div>
     <p className="mt-6 text-center text-xs text-zinc-500">New here? <Link href="/sign-up" className="text-[#b8ff65]">Create an account</Link></p>
   </div></main>;
